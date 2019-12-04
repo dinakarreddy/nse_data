@@ -11,6 +11,24 @@ OPTION_DATA_DIR = os.path.join(DATA_DIR, 'weekly_option_data')
 EXPIRY_DAYS = [
     datetime.datetime.strptime(_str, "%Y-%m-%d") for _str in
     [
+        '2019-07-04',
+        '2019-07-11',  # Budget week
+        '2019-07-18',
+        '2019-07-25',
+        '2019-08-01',
+        '2019-08-08',
+        '2019-08-14',
+        '2019-08-22',
+        '2019-08-29',
+        '2019-09-05',
+        '2019-09-12',
+        '2019-09-19',
+        '2019-09-26',
+        '2019-10-03',
+        '2019-10-10',
+        '2019-10-17',  # data missing
+        '2019-10-24',
+        '2019-10-31',
         '2019-11-07',
         '2019-11-14',
         '2019-11-21',
@@ -57,18 +75,18 @@ def main(strike_price, option_type, date_str, open_time="09:30", close_time="15:
     strike_price = int(strike_price)
     expiry_date_obj = get_expiry_day(date_obj)
     if not expiry_date_obj:
-        raise DataNotPresentError("Expiry date doesn't exist")
+        raise DataNotPresentError("Expiry date doesn't exist, {date_str}".format(date_str=date_str))
     days_for_expiry = (expiry_date_obj - date_obj).days
     file_path = get_file_path(expiry_date_obj, strike_price, option_type)
     if not file_path:
-        raise DataNotPresentError("file_path doesn't exist")
+        raise DataNotPresentError("file_path doesn't exist {date_str}".format(date_str=date_str))
     header = ['name', 'date', 'time', 'open', 'high', 'low', 'close', 'volume']
     df = pd.read_csv(file_path, header=None, names=header)
     df = df[df['date'] == date_str]
     sub_df = df[(df['time'] >= open_time) & (df['time'] <= close_time)].sort_values(
         by=['date', 'time'])
     if sub_df.empty:
-        raise DataNotPresentError("Empty data")
+        raise DataNotPresentError("Empty data {date_str}".format(date_str=date_str))
     open_data = sub_df.iloc[0, :].to_dict()
     close_data = sub_df.iloc[-1, :].to_dict()
     open = open_data['open']
