@@ -63,7 +63,7 @@ def store_nifty_50_option_trades_parser(arguments):
                         )
     parser.add_argument('--down_percent',
                         dest='down_percent',
-                        type=int,
+                        type=float,
                         default=1.67,
                         )
     parser.add_argument('--open_time',
@@ -73,6 +73,11 @@ def store_nifty_50_option_trades_parser(arguments):
     parser.add_argument('--close_time',
                         dest='close_time',
                         default='15:15',
+                        )
+    parser.add_argument('--stop_loss_percent',
+                        dest='stop_loss_percent',
+                        type=float,
+                        default=100,
                         )
     return parser.parse_args(arguments)
 
@@ -97,6 +102,7 @@ def main():
                 down_percent=parsed.down_percent,
                 open_time=parsed.open_time,
                 close_time=parsed.close_time,
+                stop_loss_percent=parsed.stop_loss_percent,
             )
 
 

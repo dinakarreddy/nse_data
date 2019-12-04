@@ -31,10 +31,30 @@ def get_call_and_put_strike(price, step=50, up_percent=1.67, down_percent=1.67):
     return int(call_strike), int(put_strike)
 
 
+def execute_trade(response, stop_loss_percent=100):
+    total_premium = response['call_open'] + response['put_open']
+    stop_loss = total_premium * (float(stop_loss_percent) / 100)
+    call_stop_loss = response['call_open'] + stop_loss
+    put_stop_loss = response['put_open'] + stop_loss
+    if response['call_high'] >= call_stop_loss:
+        response['call_diff'] = response['call_open'] - call_stop_loss
+    else:
+        response['call_diff'] = response['call_open'] - response['call_close']
+    if response['put_high'] >= put_stop_loss:
+        response['put_diff'] = response['put_open'] - put_stop_loss
+    else:
+        response['put_diff'] = response['put_open'] - response['put_close']
+    response['total_diff'] = response['put_diff'] + response['call_diff']
+    response['nifty_diff'] = response['nifty_close'] - response['nifty_open']
+    response['nifty_diff_percent'] = float(response['nifty_diff'] * 100) / response['nifty_open']
+
+
 def main(option_trade_file_name='nifty_50_option_trades.csv',
          nifty_50_data_file_name='nifty_50_data.csv',
          up_percent=2, down_percent=2,
-         open_time="09:30", close_time="15:15"):
+         open_time="09:30", close_time="15:15",
+         stop_loss_percent=100,
+         ):
     file_path = os.path.join(DATA_DIR, nifty_50_data_file_name)
     rows = pd.read_csv(file_path).to_dict('records')
     final_data = []
@@ -75,6 +95,7 @@ def main(option_trade_file_name='nifty_50_option_trades.csv',
             'open_time': open_time,
             'close_time': close_time,
         }
+        execute_trade(response, stop_loss_percent=stop_loss_percent)
         final_data.append(response)
     final_df = pd.DataFrame(final_data)
     final_df.to_csv(os.path.join(DATA_DIR, option_trade_file_name), index=False)
