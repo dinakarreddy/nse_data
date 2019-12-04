@@ -6,6 +6,7 @@ logging.config.dictConfig(LOG_CONFIG)
 
 import sys
 from nifty_50.fetch_data.nifty_50 import main as store_nifty_50_data
+from nifty_50.weekly_options.store_option_trades import main as store_nifty_50_option_trades
 import datetime
 from pytz import timezone
 import argparse
@@ -23,7 +24,7 @@ def valid_date(argument):
 
 
 def store_nifty_50_data_parser(arguments):
-    parser = argparse.ArgumentParser(description='Run data_check')
+    parser = argparse.ArgumentParser()
     parser.add_argument('--start_datetime',
                         dest='start_datetime',
                         type=valid_date,
@@ -45,17 +46,58 @@ def store_nifty_50_data_parser(arguments):
     return parser.parse_args(arguments)
 
 
+def store_nifty_50_option_trades_parser(arguments):
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--option_trade_file_name',
+                        dest='option_trade_file_name',
+                        default='nifty_50_option_trades.csv',
+                        )
+    parser.add_argument('--nifty_50_data_file_name',
+                        dest='nifty_50_data_file_name',
+                        default='nifty_50_data.csv',
+                        )
+    parser.add_argument('--up_percent',
+                        dest='up_percent',
+                        type=int,
+                        default=1.67,
+                        )
+    parser.add_argument('--down_percent',
+                        dest='down_percent',
+                        type=int,
+                        default=1.67,
+                        )
+    parser.add_argument('--open_time',
+                        dest='open_time',
+                        default='09:30',
+                        )
+    parser.add_argument('--close_time',
+                        dest='close_time',
+                        default='15:15',
+                        )
+    return parser.parse_args(arguments)
+
+
 def main():
     arguments = sys.argv
     for i, arg in enumerate(arguments):
         if arg == 'store_nifty_50_data':
             parsed = store_nifty_50_data_parser(arguments[i + 1:])
             store_nifty_50_data(
-                parsed.start_datetime.strftime('%d-%m-%Y'),
-                parsed.end_datetime.strftime('%d-%m-%Y'),
-                parsed.file_name
+                from_date=parsed.start_datetime.strftime('%d-%m-%Y'),
+                to_date=parsed.end_datetime.strftime('%d-%m-%Y'),
+                file_name=parsed.file_name,
             )
             break
+        if arg == 'store_nifty_50_option_trades':
+            parsed = store_nifty_50_option_trades_parser(arguments[i + 1:])
+            store_nifty_50_option_trades(
+                option_trade_file_name=parsed.option_trade_file_name,
+                nifty_50_data_file_name=parsed.nifty_50_data_file_name,
+                up_percent=parsed.up_percent,
+                down_percent=parsed.down_percent,
+                open_time=parsed.open_time,
+                close_time=parsed.close_time,
+            )
 
 
 if __name__ == '__main__':

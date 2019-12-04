@@ -1,0 +1,2 @@
+class DataNotPresentError(Exception):
+    pass
